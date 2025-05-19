@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Static QR-code</title>
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 2rem;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .header h1 {
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 1rem;
+      color: #444;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .main-content {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 4rem;
+    }
+
+    .left-panel {
+      width: 300px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1em;
+    }
+
+    label {
+      margin-bottom: 0.3em;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    select {
+      padding: 0.5em;
+      font-size: 1rem;
+    }
+
+    input[type="color"] {
+      width: 100%;
+      height: 2.5em;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 0.5em;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1em;
+    }
+
+    button {
+      padding: 0.6em;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #333;
+      color: white;
+      border: none;
+    }
+
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .qr-box {
+      width: 300px;
+      height: 300px;
+      background: white;
+      border: 1px solid #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #qrcode > canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .dynamic-inputs {
+      display: none;
+      flex-direction: column;
+      gap: 0.5em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Static QR-code</h1>
+    <p>
+      This tool creates static QR codes — they encode the data directly, so they never expire.
+      Unlike dynamic QR codes, no third party can deactivate them or charge you ongoing fees.
+      Once generated, your static QR code is yours forever.
+    </p>
+  </div>
+
+  <div class="main-content">
+    <div class="left-panel">
+      <div class="form-group">
+        <label for="typeInput">QR Code Type</label>
+        <select id="typeInput">
+          <option value="url">Website URL</option>
+          <option value="wifi">Wi-Fi</option>
+          <option value="vcard">vCard</option>
+        </select>
+      </div>
+
+      <div class="form-group dynamic-inputs" id="urlInputs">
+        <label for="urlInput">Website URL</label>
+        <input type="text" id="urlInput" placeholder="https://example.com" />
+      </div>
+
+      <div class="form-group dynamic-inputs" id="wifiInputs">
+        <label>SSID</label>
+        <input type="text" id="wifiSsid" />
+        <label>Password</label>
+        <input type="text" id="wifiPass" />
+        <label>Encryption</label>
+        <select id="wifiEncryption">
+          <option value="WPA">WPA/WPA2</option>
+          <option value="WEP">WEP</option>
+          <option value="nopass">None</option>
+        </select>
+      </div>
+
+      <div class="form-group dynamic-inputs" id="vcardInputs">
+        <label>Full Name</label>
+        <input type="text" id="vcardName" />
+        <label>Phone</label>
+        <input type="text" id="vcardPhone" />
+        <label>Email</label>
+        <input type="text" id="vcardEmail" />
+      </div>
+
+      <div class="form-group">
+        <label for="colorDark">Foreground Color</label>
+        <input type="color" id="colorDark" value="#000000" />
+      </div>
+
+      <div class="form-group">
+        <label for="colorLight">Background Color</label>
+        <input type="color" id="colorLight" value="#ffffff" />
+      </div>
+
+      <div class="form-group">
+        <label for="styleInput">QR Code Style</label>
+        <select id="styleInput">
+          <option value="square">Square</option>
+          <option value="dots">Dots</option>
+          <option value="rounded">Rounded</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="logoInput">Logo Image (optional)</label>
+        <input type="file" id="logoInput" accept="image/*" />
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="autoUpdateCheckbox" />
+        <label for="autoUpdateCheckbox">Generate QR code automatically</label>
+      </div>
+
+      <button id="generateBtn" onclick="generateQRCode()">Generate Static QR Code</button>
+    </div>
+
+    <div class="qr-container">
+      <div class="qr-box">
+        <div id="qrcode"></div>
+      </div>
+
+      <div class="form-group" style="margin-top: 1em; width: 300px;">
+        <label for="downloadFormat">Download Format</label>
+        <select id="downloadFormat">
+          <option value="png" selected>PNG</option>
+          <option value="svg">SVG</option>
+          <option value="jpeg">JPG</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="width: 300px;">
+        <label for="filenameInput">File Name (without extension)</label>
+        <input type="text" id="filenameInput" placeholder="qr-code" />
+      </div>
+
+      <button style="margin-top: 0.5em;" onclick="downloadQRCode()">Download QR Code</button>
+    </div>
+  </div>
+
+  <script>
+    let qrCode = null;
+    const fixedSize = 300;
+
+    const typeInput = document.getElementById("typeInput");
+    const urlInputs = document.getElementById("urlInputs");
+    const wifiInputs = document.getElementById("wifiInputs");
+    const vcardInputs = document.getElementById("vcardInputs");
+
+    typeInput.addEventListener("change", showRelevantInputs);
+
+    function showRelevantInputs() {
+      const type = typeInput.value;
+      urlInputs.style.display = type === "url" ? "flex" : "none";
+      wifiInputs.style.display = type === "wifi" ? "flex" : "none";
+      vcardInputs.style.display = type === "vcard" ? "flex" : "none";
+      if (document.getElementById("autoUpdateCheckbox").checked) generateQRCode();
+    }
+
+    function getQRData() {
+      const type = typeInput.value;
+      if (type === "url") {
+        return document.getElementById("urlInput").value.trim();
+      } else if (type === "wifi") {
+        const ssid = document.getElementById("wifiSsid").value.trim();
+        const pass = document.getElementById("wifiPass").value.trim();
+        const enc = document.getElementById("wifiEncryption").value;
+        return `WIFI:T:${enc};S:${ssid};P:${pass};;`;
+      } else if (type === "vcard") {
+        const name = document.getElementById("vcardName").value.trim();
+        const phone = document.getElementById("vcardPhone").value.trim();
+        const email = document.getElementById("vcardEmail").value.trim();
+        return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL:${phone}\nEMAIL:${email}\nEND:VCARD`;
+      }
+      return "";
+    }
+
+    function generateQRCode() {
+      const data = getQRData();
+      const colorDark = document.getElementById("colorDark").value;
+      const colorLight = document.getElementById("colorLight").value;
+      const style = document.getElementById("styleInput").value;
+
+      const logoFile = document.getElementById("logoInput").files[0];
+      if (logoFile) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          renderQRCode(data, colorDark, colorLight, style, event.target.result);
+        };
+        reader.readAsDataURL(logoFile);
+      } else {
+        renderQRCode(data, colorDark, colorLight, style, null);
+      }
+    }
+
+    function renderQRCode(data, colorDark, colorLight, style, logoDataUrl) {
+      const options = {
+        width: fixedSize,
+        height: fixedSize,
+        data: data || " ",
+        dotsOptions: {
+          color: colorDark,
+          type: style
+        },
+        backgroundOptions: {
+          color: colorLight
+        },
+        image: logoDataUrl || "",
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 5
+        },
+        cornersSquareOptions: {
+          type: "extra-rounded"
+        }
+      };
+
+      if (qrCode) {
+        qrCode.update(options);
+      } else {
+        qrCode = new QRCodeStyling(options);
+        qrCode.append(document.getElementById("qrcode"));
+      }
+    }
+
+    function attachAutoUpdateHandlers() {
+      const ids = [
+        "urlInput", "wifiSsid", "wifiPass", "wifiEncryption",
+        "vcardName", "vcardPhone", "vcardEmail",
+        "colorDark", "colorLight", "styleInput", "logoInput", "typeInput"
+      ];
+
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener("input", () => {
+            if (document.getElementById("autoUpdateCheckbox").checked) {
+              generateQRCode();
+            }
+          });
+        }
+      });
+    }
+
+    document.getElementById("autoUpdateCheckbox").addEventListener("change", function () {
+      const generateBtn = document.getElementById("generateBtn");
+      if (this.checked) {
+        generateBtn.style.display = "none";
+        generateQRCode();
+      } else {
+        generateBtn.style.display = "block";
+      }
+    });
+
+    function downloadQRCode() {
+      if (qrCode) {
+        const format = document.getElementById("downloadFormat").value;
+        const nameInput = document.getElementById("filenameInput").value.trim();
+        const filename = nameInput ? nameInput : "qr-code";
+        qrCode.download({
+          name: filename,
+          extension: format
+        });
+      }
+    }
+
+    showRelevantInputs();
+    attachAutoUpdateHandlers();
+  </script>
+
+</body>
+</html>
